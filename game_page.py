@@ -9,10 +9,40 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import numpy as np
+from tkinter import messagebox
+import showings
+import time
+
+# to remove tkinter window
+import tkinter
+root= tkinter.Tk()
+root.withdraw()
+###
 
 
 class Ui_Game_Window(object):
+                ###HAMIED CODE####
+    def __init__(self,mode=2,stealing=True,level=5,p1_first=1):
+                self.current_state=np.array([4,4,4,4,4,4,0,4,4,4,4,4,4,0],dtype='int')
+                self.action =-1 #no action
+                self.turn= p1_first
+                self.stealing= stealing
+                self.level=level
+                self.mode = mode 
+                if self.mode ==1:
+                        self.player1= "Player 1"
+                        self.player2= "AI"
+                elif self.mode==2:
+                        self.player1= "Player 1"
+                        self.player2= "Player 2"
+                
+                elif self.mode == 0:
+                        self.player1= "AI 1"
+                        self.player2= "AI 2"
+
     def setupUi(self, Game_Window):
+        self.Game_Window= Game_Window
         Game_Window.setObjectName("Game_Window")
         Game_Window.resize(1302, 900)
         Game_Window.setMinimumSize(QtCore.QSize(1302, 653))
@@ -171,6 +201,7 @@ class Ui_Game_Window(object):
 "color:#222831;\n"
 "border-radius:12px;")
         self.btn_exit.setObjectName("btn_exit")
+        ###
         self.btn_next = QtWidgets.QPushButton(self.centralwidget)
         self.btn_next.setGeometry(QtCore.QRect(570, 620, 211, 81))
         self.btn_next.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
@@ -178,6 +209,8 @@ class Ui_Game_Window(object):
 "color:#222831;\n"
 "border-radius:12px;")
         self.btn_next.setObjectName("btn_next")
+        self.btn_next.hide()
+        ###
         self.label.raise_()
         self.btn_p11.raise_()
         self.btn_p12.raise_()
@@ -197,7 +230,6 @@ class Ui_Game_Window(object):
         self.lbl_level.raise_()
         self.lbl_title.raise_()
         self.btn_exit.raise_()
-        self.btn_next.raise_()
         Game_Window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(Game_Window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1302, 26))
@@ -209,8 +241,41 @@ class Ui_Game_Window(object):
 
         self.retranslateUi(Game_Window)
         QtCore.QMetaObject.connectSlotsByName(Game_Window)
+        #############################################################
+        ## draw initial state
+        self.draw_state()
 
-    def retranslateUi(self, Game_Window):
+        if self.mode ==1:
+                # enable player1 turn
+                pass         
+        elif self.mode ==2:
+                pass
+        
+        elif self.mode==0:
+                pass
+
+        ## buttons connections
+        self.btn_p11.clicked.connect(lambda : self.btn_click(0))
+        self.btn_p12.clicked.connect(lambda : self.btn_click(1))
+        self.btn_p13.clicked.connect(lambda : self.btn_click(2))
+        self.btn_p14.clicked.connect(lambda : self.btn_click(3))
+        self.btn_p15.clicked.connect(lambda : self.btn_click(4))
+        self.btn_p16.clicked.connect(lambda : self.btn_click(5))
+
+        self.btn_p21.clicked.connect(lambda : self.btn_click(7))
+        self.btn_p22.clicked.connect(lambda : self.btn_click(8))
+        self.btn_p23.clicked.connect(lambda : self.btn_click(9))
+        self.btn_p24.clicked.connect(lambda : self.btn_click(10))
+        self.btn_p25.clicked.connect(lambda : self.btn_click(11))
+        self.btn_p26.clicked.connect(lambda : self.btn_click(12))
+
+        self.btn_exit.clicked.connect(lambda: self.btn_exit_click())
+
+        self.btn_next.clicked.connect(self.btn_next_click)
+
+        ######################################################################
+    def retranslateUi(self, Game_Window): ##HAMIED CODE ###
+        l=[0,0,'Easy Level',0,0, 'Medium Level',0,'Hard Level']
         _translate = QtCore.QCoreApplication.translate
         Game_Window.setWindowTitle(_translate("Game_Window", "Mancala"))
         self.btn_p11.setText(_translate("Game_Window", "4"))
@@ -228,17 +293,469 @@ class Ui_Game_Window(object):
         self.txt_player2_score.setText(_translate("Game_Window", "0"))
         self.txt_player1_score.setText(_translate("Game_Window", "0"))
         self.lbl_title.setText(_translate("Game_Window", "MANCALA"))
-        self.label.setText(_translate("Game_Window", "<html><head/><body><p><img src=\":/newPrefix/Mancala-fun-entertainment-game-512.png\"/></p></body></html>"))
+        if self.mode ==1:
+                self.lbl_level.setText(_translate("Game_Window", l[self.level]))
+        self.label.setText(_translate("Game_Window", "<html><head/><body><p><img src=\"Mancala-fun-entertainment-game-512.png\"/></p></body></html>"))
         self.btn_exit.setText(_translate("Game_Window", "Exit"))
         self.btn_next.setText(_translate("Game_Window", "Next Move"))
-import 1_rc
+    ###
+
+### button functions#########################################################
+    def btn_exit_click(self):
+        v=messagebox.askyesno("Mancala","Are You Sure You Want To Exit?")
+        
+        if v:
+                self.current_state=np.array([4,4,4,4,4,4,0,4,4,4,4,4,4,0],dtype='int')
+                self.draw_state()
+                self.Game_Window.close()
+                self.back_window, self.back_ui = showings.show_start_page()
+
+    def disable_p2(self):
+        # disable player 2
+        self.btn_p21.setEnabled(False)
+        self.btn_p22.setEnabled(False)
+        self.btn_p23.setEnabled(False)
+        self.btn_p24.setEnabled(False)
+        self.btn_p25.setEnabled(False)
+        self.btn_p26.setEnabled(False)
+    
+    def enable_p2(self):
+        # enable player 2
+        self.btn_p21.setEnabled(True)
+        self.btn_p22.setEnabled(True)
+        self.btn_p23.setEnabled(True)
+        self.btn_p24.setEnabled(True)
+        self.btn_p25.setEnabled(True)
+        self.btn_p26.setEnabled(True)
+    
+    def enable_p1(self):
+        # enable player 1
+        self.btn_p11.setEnabled(True)
+        self.btn_p12.setEnabled(True)
+        self.btn_p13.setEnabled(True)
+        self.btn_p14.setEnabled(True)
+        self.btn_p15.setEnabled(True)
+        self.btn_p16.setEnabled(True)
+    
+    def disable_p1(self):
+        # disable player 1
+        self.btn_p11.setEnabled(False)
+        self.btn_p12.setEnabled(False)
+        self.btn_p13.setEnabled(False)
+        self.btn_p14.setEnabled(False)
+        self.btn_p15.setEnabled(False)
+        self.btn_p16.setEnabled(False)
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Game_Window = QtWidgets.QMainWindow()
-    ui = Ui_Game_Window()
-    ui.setupUi(Game_Window)
-    Game_Window.show()
-    sys.exit(app.exec_())
+    def border_p1(self):
+        # draw p1
+        self.btn_p11.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p12.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p13.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p14.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p15.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        self.btn_p16.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        # clear p2 #############################################
+        self.btn_p21.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p22.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p23.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p24.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p25.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        self.btn_p26.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+    def border_p2(self):
+        # draw p2
+        self.btn_p21.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p22.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p23.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p24.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        self.btn_p25.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        self.btn_p26.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#ff7b54;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : #00ead3; "
+                             "border-left-color :#00ead3;"
+                             "border-right-color :#00ead3;"
+                             "border-bottom-color : #00ead3")
+        
+        # clear p1 #############################################
+        self.btn_p11.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p12.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p13.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p14.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        
+        self.btn_p15.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+        self.btn_p16.setStyleSheet("font: 20pt \\\"MV Boli\\\";\n"
+"background:#e8e8e8;\n"
+"color:#222831;\n"
+"border-radius:12px;"
+"border :4px solid ;"
+                             "border-top-color : None; "
+                             "border-left-color :None;"
+                             "border-right-color :None;"
+                             "border-bottom-color : None")
+
+
+    def btn_click(self,no):
+        self.action =no
+        
+        # print(self.current_state)
+        if self.mode == 1: # one player
+                self.turn*=-1 #reverse the turn
+                self.change_state()
+                self.draw_state()
+                self.check_turns()
+                # time.sleep(0.5)
+
+                while self.turn ==-1:
+                        _,action= self.alpha_beta_pruning(self.current_state,self.level,float('-inf'),float('inf'),self.turn)
+                        self.action= action
+                        self.turn*=-1 #reverse the turn
+                        self.change_state()
+                        self.draw_state()
+                        self.check_turns()
+                        # time.sleep(1)
+        
+        elif self.mode == 2:
+                self.turn*=-1 #reverse the turn
+                self.change_state()
+                self.draw_state()
+                self.check_turns()
+        
+        
+
+        
+
+        ## check winner
+        if self.check_if_winner():
+            p1 = self.current_state[6]
+            p2 = self.current_state[13]
+            if p1> p2:
+                self.lbl_turn.setText("{} Wins!".format(self.player1))
+            elif p1<p2:
+                self.lbl_turn.setText("{} Wins!".format(self.player2))
+            else:
+                self.lbl_turn.setText("Tie!")
+        
+        # print(self.current_state)
+        self.draw_state()
+
+    def check_turns(self):
+        if self.turn == 1:
+            # enable player 1
+            self.enable_p1()
+            self.border_p1()
+            self.lbl_turn.setText(self.player1)
+
+            # disable player 2
+            self.disable_p2()
+        else:
+            # enable player 2
+            self.enable_p2()
+            self.border_p2()
+            self.lbl_turn.setText(self.player2)
+
+            # disable player 1
+            self.disable_p1()
+
+
+
+
+
+    ###
+    def draw_state(self):
+        widgets= [self.btn_p11,
+                  self.btn_p12,
+                  self.btn_p13,
+                  self.btn_p14,
+                  self.btn_p15,
+                  self.btn_p16,
+                  self.txt_player1_score,
+                  self.btn_p21,
+                  self.btn_p22,
+                  self.btn_p23,
+                  self.btn_p24,
+                  self.btn_p25,
+                  self.btn_p26,
+                  self.txt_player2_score]
+        
+        for i in range(len(self.current_state)):
+            widgets[i].setText(str(self.current_state[i]))
+
+
+    def change_state(self):
+        '''
+        algo:
+            change the current state depending on the action
+        '''
+        try:
+                if self.current_state[self.action] !=0:
+                        clicked_stone= self.current_state[self.action]
+                        self.current_state[self.action]=0
+                        
+
+                        ## check which player plays
+                        if self.action >=0 and self.action <6:
+                                skipped= 13
+                                required= 6
+                        elif self.action >=7 and self.action <13:
+                                skipped=6
+                                required= 13
+
+
+                        i = self.action
+                        while clicked_stone:
+                                i=(i+1) % 14
+                                if i != skipped: #don't increase oponnent's score
+                                        self.current_state[i]+=1
+                                        clicked_stone-=1
+
+                                
+                        ## reverse turn
+                        if (i) == required:
+                                self.turn*=-1 #reverse the turn 
+                        
+                        # stealing
+                        if self.current_state[i] ==1 and self.current_state[12-(i)] and self.stealing and (i)>=0 and (i)<6 and self.turn==-1: #player 1 , turn is reversed
+                                #steal from the oponent
+                                self.current_state[required] += (self.current_state[12-(i)] +1)
+                                self.current_state[i]=0
+                                self.current_state[12-(i)]=0
+                        
+                        if self.current_state[i] ==1 and self.current_state[12-(i)] and self.stealing and (i)>=7 and (i)<13 and self.turn ==1: #player 2 , turn is reversed
+                                #steal from the oponent
+                                self.current_state[required] += (self.current_state[12-(i)] +1)
+                                self.current_state[i]=0
+                                self.current_state[12-(i)]=0
+                        
+
+                        
+                else:
+                        self.turn*=-1
+                        messagebox.showerror("404","Invalid move!, Can't choose a zero value stone!")
+        except Exception as e:
+                print(e)
+                print(self.current_state)
+
+    def check_if_winner(self):
+        if np.sum(self.current_state[:6]) == 0:
+            self.current_state[13] += np.sum(self.current_state[7:13])
+            self.current_state[7:13] = 0
+            self.disable_p1()
+            self.disable_p2()
+            return 1
+            
+
+        elif np.sum(self.current_state[7:13]) == 0:
+            self.current_state[6] += np.sum(self.current_state[:6])
+            self.current_state[:6]=0
+            self.disable_p1()
+            self.disable_p2()
+            return 1
+        
+        return 0
+
+    ##########################################################################
+
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     Game_Window = QtWidgets.QMainWindow()
+#     ui = Ui_Game_Window()
+#     ui.setupUi(Game_Window)
+#     Game_Window.show()
+#     sys.exit(app.exec_())
