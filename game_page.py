@@ -247,12 +247,34 @@ class Ui_Game_Window(object):
 
         if self.mode ==1:
                 # enable player1 turn
-                pass         
+                if self.turn==1:
+                        self.lbl_turn.setText(self.player1)
+                        self.border_p1()
+                        self.disable_p2()
+
+                elif self.turn==-1:
+                        self.lbl_turn.setText(self.player2)
+                        self.border_p2()
+                        self.disable_p1()
+                        while self.turn ==-1:
+                                _,action= self.alpha_beta_pruning(self.current_state,self.level,float('-inf'),float('inf'),self.turn)
+                                self.action= action
+                                self.turn*=-1 #reverse the turn
+                                self.change_state()
+                                self.draw_state()
+                                self.check_turns()
+                                # time.sleep(1)
         elif self.mode ==2:
-                pass
+                self.lbl_turn.setText(self.player1)
+                self.border_p1()
+                self.disable_p2()
         
         elif self.mode==0:
-                pass
+                self.lbl_turn.setText(self.player1)
+                self.disable_p1()
+                self.border_p1()
+                self.disable_p2()
+                self.btn_next.show()
 
         ## buttons connections
         self.btn_p11.clicked.connect(lambda : self.btn_click(0))
@@ -271,7 +293,6 @@ class Ui_Game_Window(object):
 
         self.btn_exit.clicked.connect(lambda: self.btn_exit_click())
 
-        self.btn_next.clicked.connect(self.btn_next_click)
 
         ######################################################################
     def retranslateUi(self, Game_Window): ##HAMIED CODE ###
@@ -301,14 +322,6 @@ class Ui_Game_Window(object):
     ###
 
 ### button functions#########################################################
-    def btn_exit_click(self):
-        v=messagebox.askyesno("Mancala","Are You Sure You Want To Exit?")
-        
-        if v:
-                self.current_state=np.array([4,4,4,4,4,4,0,4,4,4,4,4,4,0],dtype='int')
-                self.draw_state()
-                self.Game_Window.close()
-                self.back_window, self.back_ui = showings.show_start_page()
 
     def disable_p2(self):
         # disable player 2
@@ -748,6 +761,74 @@ class Ui_Game_Window(object):
             return 1
         
         return 0
+##########################################################################
+    # AI Functions
+    def get_state(self,org_state,action,turn,stealing=True):
+        '''
+        algo:
+            change the current state depending on the action
+        '''
+        state= org_state.copy()
+        if state[action] !=0:
+                clicked_stone= state[action]
+                state[action]=0
+                
+
+                ## check which player plays
+                if action >=0 and action <6:
+                        skipped= 13
+                        required= 6
+                elif action >=7 and action <13:
+                        skipped=6
+                        required= 13
+
+
+                i = action
+                while clicked_stone:
+                        i=(i+1) % 14
+                        if i != skipped: #don't increase oponnent's score
+                                state[i]+=1
+                                clicked_stone-=1
+
+                        
+                ## reverse turn
+                if (i) != required:
+                        turn*=-1 #reverse the turn 
+                
+                # stealing
+                if state[i] ==1 and state[12-(i)] and stealing and (i)>=0 and (i)<6 and turn: #player 1 , turn is reversed
+                        #steal from the oponent
+                        state[required] += (state[12-(i)] +1)
+                        state[i]=0
+                        state[12-(i)]=0
+                
+                if state[i] ==1 and state[12-(i)] and stealing and (i)>=7 and (i)<13 and turn ==1: #player 2 , turn is reversed
+                        #steal from the oponent
+                        state[required] += (state[12-(i)] +1)
+                        state[i]=0
+                        state[12-(i)]=0
+                
+                return state,action,turn
+                
+        else:
+                return state,None,turn
+        
+
+    def possible_states(self,state,turn,stealing=True):
+        if turn == 1:
+                actions = np.array([0,1,2,3,4,5],dtype='int')
+        elif turn ==-1:
+                actions = np.array([7,8,9,10,11,12],dtype='int')
+        
+        org_state = state.copy()
+        orig_turn = turn
+        states=[]
+        for action in actions:
+                state,action,turn = self.get_state(org_state,action,orig_turn,stealing)
+                if action is not None:
+                        states.append((state,action,turn))
+        
+        return np.array(states)
 
     ##########################################################################
 
