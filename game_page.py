@@ -293,7 +293,7 @@ class Ui_Game_Window(object):
 
         self.btn_exit.clicked.connect(lambda: self.btn_exit_click())
 
-
+        self.btn_next.clicked.connect(self.btn_next_click)
         ######################################################################
     def retranslateUi(self, Game_Window): ##HAMIED CODE ###
         l=[0,0,'Easy Level',0,0, 'Medium Level',0,'Hard Level']
@@ -320,8 +320,58 @@ class Ui_Game_Window(object):
         self.btn_exit.setText(_translate("Game_Window", "Exit"))
         self.btn_next.setText(_translate("Game_Window", "Next Move"))
     ###
+    def btn_next_click(self):
+        if self.turn==1:
+                # ai 1
+                while self.turn ==1:
+                        _,action= self.alpha_beta_pruning(self.current_state,self.level,float('-inf'),float('inf'),self.turn)
+                        self.action= action
+                        self.turn*=-1 #reverse the turn
+                        self.change_state()
+                        self.draw_state()
+                        self.check_turns()
+                self.lbl_turn.setText(self.player2)
+                self.border_p2()
+                self.disable_p1()
+        
+        elif self.turn==-1:
+                # ai 2
+                while self.turn ==-1:
+                        _,action= self.alpha_beta_pruning(self.current_state,self.level,float('-inf'),float('inf'),self.turn)
+                        self.action= action
+                        self.turn*=-1 #reverse the turn
+                        self.change_state()
+                        self.draw_state()
+                        self.check_turns()
+                        # time.sleep(3)
+                self.lbl_turn.setText(self.player1)
+                self.border_p1()
+                self.disable_p2()
+        
+        ## check winner
+        if self.check_if_winner():
+            self.btn_next.setEnabled(False)
+            p1 = self.current_state[6]
+            p2 = self.current_state[13]
+            if p1> p2:
+                self.lbl_turn.setText("{} Wins!".format(self.player1))
+            elif p1< p2:
+                self.lbl_turn.setText("{} Wins!".format(self.player2))
+            else:
+                self.lbl_turn.setText("Tie!")  
+        
+        # print(self.current_state)
+        self.draw_state()
 
 ### button functions#########################################################
+    def btn_exit_click(self):
+        v=messagebox.askyesno("Mancala","Are You Sure You Want To Exit?")
+        
+        if v:
+                self.current_state=np.array([4,4,4,4,4,4,0,4,4,4,4,4,4,0],dtype='int')
+                self.draw_state()
+                self.Game_Window.close()
+                self.back_window, self.back_ui = showings.show_start_page()
 
     def disable_p2(self):
         # disable player 2
